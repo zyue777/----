@@ -1,169 +1,141 @@
-# 📖 MD-Flashcards
+# 📖 MD-Flashcards：基于 Markdown 的智能背词利器
 
-**MD-Flashcards** is a terminal-based (TUI) flashcard app that reads your Markdown notes and turns them into spaced-repetition flashcards — powered by the **FSRS** algorithm.
-
-Write your vocabulary or knowledge in a simple Markdown table, put it in a folder, press `s` to sync, and start learning. The app schedules reviews automatically so you study the right cards at the right time.
+**MD-Flashcards** 是一款工作在终端（TUI）和独立窗口（GUI）下的开源背词应用。它能自动解析你的 Markdown 笔记，并利用世界领先的 **FSRS (Free Spaced Repetition Scheduler)** 遗忘曲线算法，为你量身定解最优复习计划。
 
 ---
 
-## ✨ Features
+## ✨ 核心亮点
 
-- 📂 **Deck-based organization** — each folder in `data/` is a deck
-- 📋 **Sub-decks via `##` headings** inside a Markdown file
-- 🧠 **FSRS spaced repetition** (state-of-the-art algorithm)
-- 🔊 **Auto pronunciation** via edge-tts + mpv (English TTS, cached locally)
-- 🖥️ **Pure terminal UI** — no browser, no Electron, just your terminal
-- ⌨️ **Keyboard-first** shortcuts (`Space` to flip, `1-4` to rate)
-- 🖱️ **Mouse supported** — click to flip, click to rate
-
----
-
-## 📦 Requirements
-
-| Dependency | Install |
-|---|---|
-| Python 3.11+ | via [Miniconda](https://docs.conda.io/en/latest/miniconda.html) |
-| mpv (audio player) | `sudo apt install mpv` |
-| conda env | see below |
+- 📂 **笔记即牌组**：无需繁琐导入，只需在 `data/` 目录下创建文件夹并放入 Markdown 文件，程序会自动识别牌组。
+- 🏷️ **灵活分类**：支持使用 Markdown 的二级标题 (`##`) 自动划分“子牌组”标签。
+- 🧠 **科学复习 (FSRS)**：内置最前沿的间隔重复算法，比传统的 Anki 算法更精准地预测你的遗忘点。
+- 🔊 **自动语音**：集成微软 `edge-tts` 高质量语音引擎，每个单词都会自动发音并本地缓存（节省流量）。
+- 🖥️ **双模运行**：
+    - **TUI 模式**：极客感十足的黑客终端界面。
+    - **GUI 模式**：独立的深色系悬浮窗口，支持鼠标点击与滚轮滑动。
+- 🖱️ **深度优化**：完美适配 Linux 中文字体显示（杜绝方块乱码），支持快捷键与鼠标双重操作。
 
 ---
 
-## 🚀 Quick Start
+## 📦 环境准备
 
-### 1. Clone the repo
+在开始之前，请确保你的系统已安装以下组件：
+
+1. **Python 3.11+** (推荐使用 [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 管理环境)
+2. **mpv 播放器** (用于音频播放)：
+   - **Ubuntu/Debian**: `sudo apt install mpv`
+   - **macOS**: `brew install mpv`
+   - **Windows**: [下载 mpv.io](https://mpv.io/) 并添加至系统 PATH。
+
+---
+
+## 🚀 快速上手
+
+### 1. 克隆仓库 & 准备环境
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/md-flashcards.git
+git clone https://github.com/你的用户名/md-flashcards.git
 cd md-flashcards
-```
 
-### 2. Create the conda environment
-
-```bash
+# 创建并激活虚拟环境
 conda create -n md-flashcards python=3.11 -y
 conda activate md-flashcards
+
+# 安装依赖
 pip install textual fsrs edge-tts sqlalchemy markdown-it-py
 ```
 
-### 3. Install mpv (for audio)
+### 2. 运行程序
+
+你可以根据喜好选择运行模式：
 
 ```bash
-sudo apt install mpv   # Ubuntu / Debian
-# or
-brew install mpv       # macOS
-```
+# 模式 A：独立悬浮窗口（推荐，可拖动、可点击）
+python gui.py
 
-### 4. Run the app
-
-```bash
+# 模式 B：终端黑客模式
 python tui.py
 ```
 
 ---
 
-## 📁 Adding Your Own Flashcards
+## 📁 单词录入格式详解
 
-The app reads Markdown files from the `data/` directory. Each **subfolder = one Deck**.
+程序扫描 `data/` 目录。**每一个子文件夹代表一个主牌组 (Deck)**。
 
-### Step 1 — Create a deck folder
+### 录入步骤
 
-```
-data/
-└── My_English_Words/     ← deck name shown in sidebar
-    └── vocab.md
-```
-
-### Step 2 — Write your Markdown file
-
-Follow this format (see also `data/standard_template.md` for a copy-paste template):
+1. 在 `data/` 下新建文件夹，如 `data/每日高频词/`。
+2. 里面创建一个 `.md` 文件，格式如下（可参考 `data/standard_template.md`）：
 
 ```markdown
-# My Vocabulary Book Title
+# 单词本标题（会被解析器忽略，仅供参考）
 
-## Business Terms     ← this becomes a Sub-deck tag
+## 商业词汇      <-- 这里是子分类标签 (Sub-deck)
 
-| 英文词汇 | 中文释义 | 商业语境与潜台词 / 备注 |
+| 英文词汇 | 中文释义 | 备注 / 语境 |
 | --- | --- | --- |
-| **Headwind** | 逆风 / 不利因素 | 财报常用：拖累业绩的宏观因素 |
-| **Tailwind** | 顺风 / 利好因素 | 财报常用：助推业绩的宏观利好 |
+| **Cash Cow** | 现金牛，摇钱树 | 指能提供强劲现金流的核心业务。 |
+| **Headwind** | 逆风 / 不利因素 | 财报常用：阻碍增长的因素。 |
 
-## Finance Terms      ← another Sub-deck
+## 法律词汇      <-- 另一个分类
 
-| 英文词汇 | 中文释义 | 商业语境与潜台词 / 备注 |
+| 英文词汇 | 中文释义 | 备注 / 语境 |
 | --- | --- | --- |
-| **Cash Cow** | 现金牛 | 能为公司带来强劲现金流的核心业务 |
+| **Affidavit** | 宣誓书 | 法律程序中的书面陈述。 |
 ```
 
-**Rules:**
-- Column 1: English word (bold `**word**` or plain both work)
-- Column 2: Chinese translation
-- Column 3: Context / notes (can be empty)
-- Do **not** change the column headers — the parser recognizes them
-
-### Step 3 — Sync in the app
-
-Press **`s`** inside the app to scan and import all Markdown files from `data/`.
+**⚠️ 注意事项**：
+- 第一列：英文单词（支持粗体文字）。
+- 第二列：中文翻译。
+- 第三列：扩展语境或备注（可选）。
+- **请勿修改表头名称**，解析器依靠表头识别列。
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## ⌨️ 快捷键说明
 
-| Key | Action |
+| 按键 | 动作描述 |
 |---|---|
-| `s` | Sync / import Markdown files from `data/` |
-| `Space` or `Enter` | Flip card |
-| `1` | Rate: Again (review soon) |
-| `2` | Rate: Hard |
-| `3` | Rate: Good |
-| `4` | Rate: Easy |
-| `q` | Quit |
+| `Space` / `Enter` | **翻转卡片**（显示释义并自动播放语音） |
+| `1` | **Again (忘光了)**：近期会频繁再次出现。 |
+| `2` | **Hard (吃力)**：缩短下次复习时间。 |
+| `3` | **Good (记住了)**：按照科学间隔安排下次复习。 |
+| `4` | **Easy (太简单)**：大幅延长下次复习间隔。 |
+| `s` | **同步 (Sync)**：扫描 `data/` 目录下的新 md 文件。 |
+| `q` | **退出** |
 
-> You can also **click** the card to flip it, and **click** the rating buttons.
-
----
-
-## 📂 Project File Structure
-
-```
-md-flashcards/
-├── tui.py                  # Main app entry point
-├── fsrs_engine.py          # FSRS scheduling logic
-├── database.py             # SQLAlchemy DB models
-├── parser.py               # Markdown file parser
-├── audio.py                # edge-tts + mpv audio playback
-│
-├── data/                   # ← Put your decks here
-│   ├── standard_template.md    # Copy-paste template for new decks
-│   └── YOUR_DECK_FOLDER/       # One folder = one deck
-│       └── your_words.md
-│
-├── .cache/audio/           # ⚠️ Auto-generated — safe to delete
-│                           #   (MP3 cache from edge-tts, regenerated on demand)
-│
-└── data/flashcards.db      # ⚠️ Your review history — DO NOT delete
-                            #   unless you want to reset all progress
-```
+> **提示**：GUI 模式下，你可以直接使用**鼠标滚轮**查看侧边栏牌组，点击卡片翻转。
 
 ---
 
-## 🗑️ What You Can Safely Delete
+## 🧠 FSRS 算法与“待复习”机制
 
-| Path | Safe to delete? | Notes |
+本软件的核心是基于**日期和遗忘规律**。
+
+- **为什么牌组显示“已完成”？**：如果你今天已经复习完了所有词，或者该词的下次复习日期还没到，它就不会出现在列表中。
+- **动态规划**：系统不会让你一次背完所有单词。它会计算：如果你今天选了 `Good`，这个词可能 3 天后才需要再看；如果你选了 `Again`，它可能 10 分钟后就会绕回来。
+- **数据安全**：你的学习进度保存在 `data/flashcards.db`。请务必备份此文件，它是你记忆的“数字化身”。
+
+---
+
+## 🗑️ 文件维护指南
+
+| 文件/目录 | 是否可删 | 作用说明 |
 |---|---|---|
-| `.cache/audio/` | ✅ Yes | MP3 cache, auto-regenerated on next run |
-| `__pycache__/` | ✅ Yes | Python bytecode, auto-regenerated |
-| `data/Crocs_Earnings/` | ✅ Yes | Example deck, can be removed |
-| `data/standard_template.md` | ✅ Yes | Just a reference template |
-| `data/flashcards.db` | ⚠️ Careful | Deletes **all** your review history & progress |
+| `.cache/audio/` | ✅ 是 | 语音缓存。删除后下次运行会自动重新生成。 |
+| `__pycache__/` | ✅ 是 | Python 编译缓存，不影响运行。 |
+| `data/some_deck/` | ✅ 是 | 如果文件夹里没 md 文件了，牌组会从 App 消失。 |
+| `data/flashcards.db`| ❌ 慎重 | **切勿删除！** 这是你的所有学习记录和曲线数据。 |
 
 ---
 
-## 🤝 Contributing
+## 🤝 参与贡献
 
-PRs and issues are welcome! If you want to add support for new card formats, new TTS engines, or UI improvements, feel free to open an issue first.
+欢迎提交 PR 或 Issue！如果你觉得好用，请给这个项目点一个 ⭐️。
 
 ---
 
-## 📄 License
+## 📄 许可证
 
-MIT License — free to use, modify, and share.
+本项目采用 MIT 许可证开源。

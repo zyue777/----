@@ -11,17 +11,23 @@ class FSRSEngine:
         """Convert SQLAlchemy DB model to FSRS Card model."""
         c = FSRSCard()
         # fsrs v6 State enum: Learning=1, Review=2, Relearning=3 (no 0/New)
-        # New cards stored with state=0 in DB -> treat as Learning to start scheduling
         raw_state = db_card.state if db_card.state in (1, 2, 3) else 1
         c.state = State(raw_state)
-        c.step = db_card.step
-        c.due = db_card.due
+        c.step = db_card.step if db_card.step is not None else 0
+        # SQLite strips tzinfo — re-attach UTC so FSRS can subtract datetimes safely
+        due = db_card.due
+        if due is not None and due.tzinfo is None:
+            due = due.replace(tzinfo=timezone.utc)
+        c.due = due
         if db_card.stability is not None:
             c.stability = db_card.stability
         if db_card.difficulty is not None:
             c.difficulty = db_card.difficulty
         if db_card.last_review is not None:
-            c.last_review = db_card.last_review
+            lr = db_card.last_review
+            if lr.tzinfo is None:
+                lr = lr.replace(tzinfo=timezone.utc)
+            c.last_review = lr
         return c
         
     def _fsrs_to_db(self, fsrs_card: FSRSCard, db_card: DBCard):
