@@ -157,9 +157,13 @@ class MDFlashcardsApp(App):
             main_view.flip_card()
 
     def on_static_clicked(self, event) -> None:
-        """点击卡片内容区域时翻转卡片"""
+        """点击卡片内容区域时翻转或重新发音"""
         if event.widget.id == "card-content":
-            self.action_flip()
+            main_view = self.query_one("#flashcard-main", FlashcardMain)
+            if main_view.card_state == "front":
+                self.action_flip()
+            elif main_view.card_state == "back" and main_view.current_card:
+                play_audio(main_view.current_card.word)
 
     def action_sync(self) -> None:
         self.notify("正在扫描 data/ 目录的新 md 文件...", title="同步中", severity="information")

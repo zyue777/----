@@ -161,7 +161,7 @@ class MDFlashcardsGUI:
                                    highlightthickness=2,
                                    highlightbackground=ACCENT)
         self.card_frame.pack(fill=tk.BOTH, expand=True)
-        self.card_frame.bind("<Button-1>", lambda e: self._flip_card())
+        self.card_frame.bind("<Button-1>", lambda e: self._on_card_click())
 
         self.lbl_card_word = tk.Label(
             self.card_frame,
@@ -173,7 +173,7 @@ class MDFlashcardsGUI:
             cursor="hand2"
         )
         self.lbl_card_word.pack(expand=True, pady=(40, 8))
-        self.lbl_card_word.bind("<Button-1>", lambda e: self._flip_card())
+        self.lbl_card_word.bind("<Button-1>", lambda e: self._on_card_click())
 
         self.lbl_card_def = tk.Label(
             self.card_frame,
@@ -184,6 +184,7 @@ class MDFlashcardsGUI:
             justify="center"
         )
         self.lbl_card_def.pack(expand=False)
+        self.lbl_card_def.bind("<Button-1>", lambda e: self._on_card_click())
 
         self.lbl_card_ctx = tk.Label(
             self.card_frame,
@@ -194,6 +195,7 @@ class MDFlashcardsGUI:
             justify="center"
         )
         self.lbl_card_ctx.pack(expand=False, pady=(6, 40))
+        self.lbl_card_ctx.bind("<Button-1>", lambda e: self._on_card_click())
 
         self.lbl_flip_hint = tk.Label(
             self.card_frame,
@@ -202,6 +204,7 @@ class MDFlashcardsGUI:
             font=self.font_small
         )
         self.lbl_flip_hint.pack(side=tk.BOTTOM, pady=10)
+        self.lbl_flip_hint.bind("<Button-1>", lambda e: self._on_card_click())
 
         # ── Rating buttons row ──
         self.btn_frame = tk.Frame(card_area, bg=BG_DARK)
@@ -289,6 +292,8 @@ class MDFlashcardsGUI:
         card = self.due_queue[0]
         self.card_flipped = True
 
+        threading.Thread(target=play_audio, args=(card.word,), daemon=True).start()
+
         # Normalize text to replace full-width punctuation with half-width for better font compatibility
         def normalize(t):
             if not t: return ""
@@ -306,6 +311,15 @@ class MDFlashcardsGUI:
         self.lbl_flip_hint.config(text="")
         self.card_frame.config(highlightbackground=ACCENT2)
         self._show_rating_buttons(True)
+
+    def _on_card_click(self):
+        if not self.due_queue:
+            return
+        if not self.card_flipped:
+            self._flip_card()
+        else:
+            card = self.due_queue[0]
+            threading.Thread(target=play_audio, args=(card.word,), daemon=True).start()
 
     def _show_empty(self):
         self.card_flipped = False
