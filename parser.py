@@ -21,12 +21,15 @@ def parse_markdown_table_row(line):
     return None
 
 def process_file(filepath, session):
+    from sqlalchemy.exc import IntegrityError
     # deck_name taken from the parent folder (e.g., data/Crocs_Earnings/xxx.md -> Crocs_Earnings)
     deck_name = os.path.basename(os.path.dirname(filepath))
     current_sub_deck = None
     
     added = 0
     skipped = 0
+    # Track words already processed in this file to handle same-word-different-meaning entries
+    seen_in_file = set()
     
     with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
@@ -49,7 +52,13 @@ def process_file(filepath, session):
                 if not word: 
                     continue
                 
-                # Incremental Check
+                # Skip if already seen in this file (same word, different meaning)
+                if word in seen_in_file:
+                    skipped += 1
+                    continue
+                seen_in_file.add(word)
+                
+                # Incremental Check against DB
                 existing = session.query(Card).filter_by(word=word).first()
                 if not existing:
                     card = Card(
@@ -60,7 +69,12 @@ def process_file(filepath, session):
                         context=context
                     )
                     session.add(card)
-                    added += 1
+                    try:
+                        session.flush()  # Detect constraint violations early
+                        added += 1
+                    except IntegrityError:
+                        session.rollback()
+                        skipped += 1
                 else:
                     skipped += 1
                     

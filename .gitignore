@@ -12,6 +12,12 @@ __pycache__/
 # Database (stores your personal card review progress)
 data/flashcards.db
 
+# Personal word decks (keep only the template; your notes stay private)
+# Ignore everything inside data's subdirectories...
+data/*/
+# ...but keep the top-level template so new users know the format
+!data/standard_template.md
+
 # Virtual environments
 .venv/
 env/
